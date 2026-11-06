@@ -92,6 +92,7 @@ the site-bootstrap and tenant-cluster pages below, which it will replace.
 | [../controller/docs/configuring-api-authentication.md](../controller/docs/configuring-api-authentication.md) | Turning API authentication on, including RBAC for `nvkectl` |
 | [design/README.md](design/README.md) | Design records and proposals; status is stated at the top of each |
 | [design/byo-os.md](design/byo-os.md) | Proposal: bringing your own OS image |
+| [design/cis-benchmark-ci.md](design/cis-benchmark-ci.md) | Design: CIS benchmark scanning in CI |
 | [design/multi-oidc-provider-support-design.md](design/multi-oidc-provider-support-design.md) | Design: multiple OIDC providers |
 | [design/kubernetes-feature-gates.md](design/kubernetes-feature-gates.md) | Proposal: operator-set Kubernetes feature gates on workload clusters, with its [ADR](../controller/docs/adrs/20261102-workload-cluster-feature-gates.md) |
 

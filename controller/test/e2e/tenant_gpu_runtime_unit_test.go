@@ -114,7 +114,7 @@ func TestAICRCommandCancelKillsItsChildren(t *testing.T) {
 				}
 				args = append(args, timeout)
 			}
-			run := &aicrRun{dir: dir}
+			run := &tenantToolRun{dir: dir}
 			ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
 			defer cancel()
 

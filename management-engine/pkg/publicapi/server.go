@@ -40,7 +40,7 @@ func MountHealth(mux *http.ServeMux, checkReadiness func(context.Context) error)
 }
 
 // Run parses common flags, mounts the command's public surface, and serves it until shutdown.
-func Run(version string, registrations []resource.Registration, cfg resource.ClientConfig) error {
+func Run(version string, surface Surface, clientConfig resource.ClientConfig) error {
 	address := flag.String("listen", ":8080", "HTTP listen address")
 	contextName := flag.String("context", "", "Datastore kubeconfig context")
 	showVersion := flag.Bool("version", false, "Print version and exit")
@@ -51,20 +51,22 @@ func Run(version string, registrations []resource.Registration, cfg resource.Cli
 		return nil
 	}
 
-	datastore, err := config.GetConfigWithContext(*contextName)
+	cfg, err := config.GetConfigWithContext(*contextName)
 	if err != nil {
 		return fmt.Errorf("load datastore configuration: %w", err)
 	}
-	datastore.Timeout = 5 * time.Second
-	disco, err := discovery.NewDiscoveryClientForConfig(datastore)
+	cfg.Timeout = 5 * time.Second
+	disco, err := discovery.NewDiscoveryClientForConfig(cfg)
 	if err != nil {
 		return fmt.Errorf("configure readiness discovery: %w", err)
 	}
-	cfg.Datastore = datastore
+	clientConfig.Datastore = cfg
+	clientConfig.Surface = surface.Name
+	clientConfig.Naming = surface.Naming
 	mux := http.NewServeMux()
-	for _, registration := range registrations {
-		if err := registration.Mount(mux, cfg); err != nil {
-			return fmt.Errorf("mount %s surface: %w", cfg.Surface, err)
+	for _, registration := range surface.Registrations {
+		if err := registration.Mount(mux, clientConfig); err != nil {
+			return fmt.Errorf("mount %s surface: %w", clientConfig.Surface, err)
 		}
 	}
 	MountHealth(mux, func(ctx context.Context) error {
@@ -72,13 +74,13 @@ func Run(version string, registrations []resource.Registration, cfg resource.Cli
 		return err
 	})
 	server := &http.Server{
-		Addr: *address, Handler: resource.WithLimits(mux, resource.ServerOptions{}),
+		Addr: *address, Handler: resource.WithLimits(mux, resource.ServerOptions{Naming: clientConfig.Naming}),
 		ReadHeaderTimeout: 5 * time.Second, WriteTimeout: 35 * time.Second, IdleTimeout: time.Minute,
 	}
 	ctx := signals.SetupSignalHandler()
 	serveErr := make(chan error, 1)
 	go func() { serveErr <- server.ListenAndServe() }()
-	slog.Info("serving REST API", "surface", cfg.Surface, "address", *address)
+	slog.Info("serving REST API", "surface", clientConfig.Surface, "address", *address)
 	select {
 	case err := <-serveErr:
 		return fmt.Errorf("serve HTTP: %w", err)

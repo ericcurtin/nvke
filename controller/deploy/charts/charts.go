@@ -32,7 +32,9 @@ const (
 // whose names start with "_" or ".", and a chart without its helpers renders
 // nothing useful.
 //
-//go:embed all:controller all:postgresql
+//go:embed all:controller/Chart.yaml all:controller/values.yaml
+//go:embed all:controller/LICENSE all:controller/NOTICE all:controller/README.md
+//go:embed all:controller/files all:controller/templates all:postgresql
 var files embed.FS
 
 // Names returns every embedded chart, sorted. These are directory names, which

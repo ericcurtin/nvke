@@ -88,7 +88,9 @@ next-tag-test: ## Test the release version rules in release/hack/next-tag.sh and
 	@python3 -B ./release/hack/test_next_tag.py
 	@python3 -B ./release/hack/test_describe_version.py
 
-RELEASE_CRD_DIR := $(CHART)/files/crds
+# The generator writes here whatever CHART is set to, so the path is not derived
+# from the overridable CHART.
+RELEASE_CRD_DIR := controller/deploy/charts/controller/files/crds
 
 .PHONY: chart-crds-check chart-crds-render-check
 chart-crds-check: ## Verify each component's committed CRDs against its own generator.
